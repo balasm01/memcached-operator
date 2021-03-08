@@ -19,12 +19,12 @@ package controllers
 import (
 	"context"
 
+	cachev1alpha1 "github.com/balasm01/memcached-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	cachev1alpha1 "github.com/balasm01/memcached-operator/api/v1alpha1"
 )
 
 // MemcachedReconciler reconciles a Memcached object
@@ -50,7 +50,11 @@ type MemcachedReconciler struct {
 func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.Log.WithValues("memcached", req.NamespacedName)
 
-	// your logic here
+	memcached := &cachev1alpha1.Memcached{}
+	err := r.Get(ctx, req.NamespacedName, memcached)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -59,5 +63,6 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cachev1alpha1.Memcached{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
